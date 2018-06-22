@@ -18,6 +18,7 @@
 </template>
 
 <script>
+import utils from '@/assets/scripts/utils'
 import SummaryDataTable from '@/components/SummaryDataTable'
 export default {
   props: {},
@@ -39,6 +40,7 @@ export default {
     query () {
       if (this.selectedYear && this.selectedMonth) {
         this.$refs.summaryTable.load()
+        this.setCache()
       } else {
         this.$dialog.alert({
           type: 'error',
@@ -46,9 +48,32 @@ export default {
         })
       }
     },
+    setCache () {
+      utils.localStorage.set('summaryData', {
+        selectedYear: this.selectedYear,
+        selectedMonth: this.selectedMonth
+      })
+    },
+    getCache () {
+      let data = utils.localStorage.get('summaryData')
+      console.log('cache', data)
+      if (data) {
+        this.selectedYear = data.selectedYear
+        this.selectedMonth = data.selectedMonth
+        return true
+      }
+      return false
+    },
     sure () {
       this.confirmDisplay = false
       this.$dialog.alert({ msg: '填写正确', type: 'success' })
+    }
+  },
+  mounted () {
+    if (this.getCache()) {
+      this.$nextTick(() => {
+        this.query()
+      })
     }
   },
   components: {

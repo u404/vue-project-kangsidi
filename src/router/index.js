@@ -54,6 +54,20 @@ const manageRouter = {
   }, {
     path: '/FillReport/Edit',
     name: 'FillReportEdit',
+    props: (route) => ({
+      ...route.query,
+      isPreview: false
+    }),
+    component: () =>
+        import(/* webpackChunkName: 'FillReport' */ '@/views/FillReport/Edit')
+  },
+  {
+    path: '/FillReport/Preview',
+    name: 'FillReportPreview',
+    props: (route) => ({
+      ...route.query,
+      isPreview: true
+    }),
     component: () =>
         import(/* webpackChunkName: 'FillReport' */ '@/views/FillReport/Edit')
   },

@@ -98,6 +98,13 @@ export default {
       if (errorToFirst) {
         this.current = 1
       }
+    },
+    reset (forceChange) {
+      if (forceChange && this.current === this.default) {
+        this.$emit('pagechange', this.current, this.current)
+      } else {
+        this.goPage(this.default, true)
+      }
     }
   },
   components: {}

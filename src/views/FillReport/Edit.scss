@@ -1,12 +1,19 @@
 .edit-wrap {
   .base-main-panel {
     &.control-panel {
+      padding-top: 10px;
       padding-bottom: 0;
+    }
+  }
+  .panel-child {
+    border-bottom: $border-default;
+    &:last-child {
+      border-bottom: none;
     }
   }
   .control-bar {
     @include flex();
-    padding: 22px $margin-default 13px;
+    padding: 12px $margin-default 13px;
     .btn-box {
       @include flex();
       .save-btn {
@@ -19,7 +26,6 @@
     }
   }
   .detail-box {
-    border-top: $border-default;
     padding: 5px 0;
     @include flex($ali: stretch);
     .budget-table-box {
@@ -40,7 +46,6 @@
     }
   }
   .filter-box {
-    border-top: $border-default;
     padding: 8px 0;
     @include flex($jus: flex-start, $ali: stretch);
     .input-box {
@@ -57,6 +62,7 @@
         .form-input {
           width: 146px;
           height: 24px;
+          font-size: 12px;
           &[disabled] {
             background: $color-disabled-light;
           }
@@ -84,13 +90,13 @@
           border: 1px solid $color-input-border-dark;
           @include flex($jus: center);
           cursor: pointer;
+          &:hover {
+            background: $color-input-hover;
+          }
           &.active {
             border-color: $color-active;
             background: $color-active;
             color: $color-white;
-          }
-          &:hover {
-            background: $color-input-hover;
           }
         }
       }

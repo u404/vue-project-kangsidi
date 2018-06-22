@@ -36,9 +36,23 @@ export default {
     }
   },
   beforeMount () {
-    this.$services.manage.getSourceWorkTableList().then(res => {
-      this.tableList = res.data
+    this.$loading({
+      title: '正在加载',
+      msg: '正在加载数据，请稍后...'
     })
+    this.$services.manage
+      .getSourceWorkTableList()
+      .then(res => {
+        this.$loading.close()
+        this.tableList = res.data
+      })
+      .catch(err => {
+        this.$loading.close()
+        this.$dialog.alert({
+          type: 'error',
+          msg: err.msg
+        })
+      })
   },
   methods: {
     formatTime (number) {
@@ -83,14 +97,14 @@ export default {
       })
       this.$services.manage
         .forceRecoverData({
-          config_id: this.addDataId,
-          filter: null
+          config_id: this.addDataId
         })
         .then(res => {
           this.$loading.close()
           this.alertSuccess()
         })
         .catch(() => {
+          this.$loading.close()
           this.alertFail()
         })
     },

@@ -78,6 +78,7 @@ export default {
       padding-left: 48px;
       line-height: 40px;
       position: relative;
+      cursor: pointer;
 
       &.router-link-active {
         background: #000a1b;

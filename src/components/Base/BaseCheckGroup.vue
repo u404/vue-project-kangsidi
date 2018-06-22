@@ -73,12 +73,16 @@ export default {
             this.indexs.push(i)
           }
         }
+        console.log(this.getCheckedData())
         this.$emit('change', this.getCheckedData())
       }
     },
     getCheckedData () {
+      if (this.single) {
+        return this.list[this.indexs[0]] // 对于单选按钮组 返回{text,value}
+      }
       return this.indexs.map(index => {
-        return this.list[index]
+        return this.list[index] // 对于多选按钮组 返回[{text,value},{text,value},...]
       })
     }
   },

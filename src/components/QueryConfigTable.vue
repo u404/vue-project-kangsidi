@@ -1,22 +1,22 @@
 <template>
-  <base-table class="query-config-table" :list="tableList">
+  <base-table class="query-config-table" :list="dataList">
     <template slot="header" slot-scope="i">
       <th>汇总层级</th>
       <th>数字单位（阈值）</th>
       <th>单位名称</th>
     </template>
     <template slot-scope="slotData">
-      <td>{{slotData.item.title}}</td>
+      <td>{{slotData.item.cn_name}}</td>
       <td class="base-center config-col" :class="{active: editIndex===slotData.index}">
         <span class="num-input-box">
-          <input :ref="'numInput' + slotData.index" class="base-input num-input" :style="{width: (1.5 + String(slotData.item.value).length*0.6 + 'em')}" v-model="editValue" @blur="editIndex=-1" />
+          <input :ref="'numInput' + slotData.index" class="base-input num-input" :style="{width: (1.5 + String(slotData.item.val).length*0.6 + 'em')}" v-model="editValue" @blur="editIndex=-1" />
         </span>
         <span class="num-text">
-          {{slotData.item.value}}
+          {{slotData.item.val}}
           <i class="edit-icon" @click="edit(slotData.index)"></i>
         </span>
       </td>
-      <td class="base-center">元</td>
+      <td class="base-center">{{unit}}</td>
     </template>
   </base-table>
 
@@ -25,38 +25,8 @@
 export default {
   data () {
     return {
-      tableList: [
-        {
-          title: '报表项一级',
-          value: 1000,
-          unit: '元'
-        },
-        {
-          title: '报表项二级',
-          value: 1000,
-          unit: '元'
-        },
-        {
-          title: '成本中心',
-          value: 1000,
-          unit: '元'
-        },
-        {
-          title: '成本中心类别',
-          value: 1000,
-          unit: '元'
-        },
-        {
-          title: '公司',
-          value: 1000,
-          unit: '元'
-        },
-        {
-          title: '月份',
-          value: 1000,
-          unit: '元'
-        }
-      ],
+      dataList: [],
+      unit: '',
       editIndex: -1,
       editValue: null
     }
@@ -66,7 +36,7 @@ export default {
       if (v !== '' && isNaN(+v)) {
         this.editValue = ov
       } else {
-        this.tableList[this.editIndex].value = +v
+        this.editSuccess(v)
       }
     },
     editIndex (val) {
@@ -76,11 +46,50 @@ export default {
   methods: {
     edit (index) {
       this.editIndex = index
-      this.editValue = this.tableList[index].value
+      this.editValue = +this.dataList[this.editIndex].val
       this.$nextTick(() => {
         this.$refs['numInput' + index].focus()
       })
+    },
+    editSuccess(value) {
+      let item = this.dataList[this.editIndex]
+      item.val = +value
+      this.saveParam(item['name'], value)
+    },
+    loadParams () {
+      this.$services.manage.getConfigs({
+        param_name: ['baogao_jine']
+      }).then(res=>{
+        this.unit = res.data[0].val
+      })
+      this.$services.manage
+        .getConfigs({
+          param_name: [
+            'bao1',
+            'bao2',
+            'chengbenzhongxin',
+            'chengbenleibie',
+            'gongsi',
+            'yuefen'
+          ]
+        })
+        .then(res => {
+          this.dataList = res.data
+        })
+    },
+    saveParam (key, value) {
+      this.$services.manage.saveConfigs({
+        params: [
+          {
+            name: key,
+            val: value
+          }
+        ]
+      })
     }
+  },
+  beforeMount () {
+    this.loadParams()
   }
 }
 </script>

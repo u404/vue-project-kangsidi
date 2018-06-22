@@ -35,7 +35,11 @@ export default {
       account: '',
       pwd: '',
       accountError: '',
-      pwdError: ''
+      pwdError: '',
+      keyPressHandle: e => {
+        console.log('enter')
+        e.keyCode === 13 && this.login()
+      }
     }
   },
   computed: {},
@@ -47,15 +51,26 @@ export default {
       this.checkPwd()
     }
   },
+  mounted () {
+    document.addEventListener('keypress', this.keyPressHandle)
+  },
+  destroyed () {
+    document.removeEventListener('keypress', this.keyPressHandle)
+  },
   methods: {
     login () {
       if (this.checkAccount() && this.checkPwd()) {
+        this.$loading({
+          title: '正在登陆',
+          msg: '登陆中，请稍后...'
+        })
         this.$store
           .dispatch('userLogin', {
             username: this.account,
             password: this.pwd
           })
           .then(() => {
+            this.$loading.close()
             this.error = ''
             if (this.action === 'back') {
               this.$router.back()
@@ -66,6 +81,7 @@ export default {
             }
           })
           .catch(err => {
+            this.$loading.close()
             this.pwdError = err.msg
           })
       }

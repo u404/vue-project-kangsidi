@@ -51,10 +51,14 @@ export default {
   },
   watch: {
     list () {
-      this.autoSetHeaderPadding()
+      this.$nextTick(() => {
+        this.autoSetHeaderPadding()
+      })
     },
     maxHeight () {
-      this.autoSetHeaderPadding()
+      this.$nextTick(() => {
+        this.autoSetHeaderPadding()
+      })
     }
   },
   methods: {
@@ -70,7 +74,7 @@ export default {
       return utils.throttle(function () {
         // 节流方式触发事件
         console.log('滚动到底部了，触发事件')
-        this.$emit('scrollBottom')
+        this.$emit('scrollbottom')
       }, 300)
     })(),
     autoSetHeaderPadding () {

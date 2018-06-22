@@ -1,11 +1,12 @@
 import qs from 'qs'
 import axios from 'axios'
 import router from '@/router'
+import config from './ajaxConfig'
 
 const ajaxBase = axios.create({
   url: '',
   method: 'get',
-  baseURL: 'http://ksd.37degree.com', //
+  baseURL: config.baseURL, //
   params: {}, // 查询字符串
   // 请求body携带数据，只适用于PUT、POST、PATCH
   // 在没有设置 `transformRequest` 时，必须是以下类型之一：
@@ -18,7 +19,7 @@ const ajaxBase = axios.create({
   responseType: 'json',
   transformRequest: [function (data, headers) { // 如果需要转换数据
     return qs.stringify(data, {
-      arrayFormat: 'brackets'
+      // arrayFormat: 'brackets'
     })
   }],
   headers: { // 请求头设置
@@ -58,10 +59,11 @@ ajaxBase.interceptors.request.use(function (config) {
 
 // 响应拦截器
 ajaxBase.interceptors.response.use(function (response) {
-  if (response.data.code === 200 || response.data.code === 304) {
+  console.log(response)
+  if (response.data instanceof Blob || +response.data.code === 200 || +response.data.code === 304) {
     return Promise.resolve(response.data)
   } else {
-    if (response.data.code === 1001) { // token不合法
+    if (+response.data.code === 1001 || +response.data.code === 1003) { // token不合法
       router.push('/Login/back')
     }
     return Promise.reject(response.data)

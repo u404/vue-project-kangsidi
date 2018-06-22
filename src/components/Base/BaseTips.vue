@@ -1,5 +1,5 @@
 <template>
-  <div class="base-tips">
+  <div class="base-tips" @click="close();triggerClose()">
     <transition name="fade" appear>
       <div class="tips-mask" v-show="visible"></div>
     </transition>

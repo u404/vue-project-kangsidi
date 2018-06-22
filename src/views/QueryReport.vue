@@ -1,29 +1,15 @@
 <template>
   <div class="query-report-wrap">
     <div class="base-main-title">查询报告&gt;</div>
+    <!-- <div class="base-main-panel">
+      <query-config-table ref="paramTable"></query-config-table>
+    </div> -->
     <div class="base-main-panel">
-      <query-config-table></query-config-table>
-    </div>
-    <div class="base-main-panel">
-      <div class="panel-title">查询报告</div>
+      <!-- <div class="panel-title">查询报告</div> -->
       <div class="query-box">
-        <div class="form-item select-group">
-          <select class="base-select">
-            <option>请选择开始</option>
-          </select>
-          <select class="base-select">
-            <option>请选择开始</option>
-          </select>
-          <span class="split-line">--</span>
-          <select class="base-select">
-            <option>请选择开始</option>
-          </select>
-          <select class="base-select">
-            <option>请选择开始</option>
-          </select>
-        </div>
+        <date-from-to-select class="form-item select-group" :only-year-select="true" :selected="selectedDate" @change="v=>{selectedDate=v}" from-year-placeholder="请选择开始年" to-year-placeholder="请选择结束年"></date-from-to-select>
         <div class="btn-group">
-          <button class="base-btn export-btn">导出报表</button>
+          <button class="base-btn export-btn" @click="exportReport">导出报表</button>
         </div>
       </div>
       <div class="report-iframe-box">
@@ -36,15 +22,63 @@
   </div>
 </template>
 <script>
+import DateFromToSelect from '@/components/DateFromToSelect'
 import QueryConfigTable from '@/components/QueryConfigTable'
 export default {
   data () {
     return {
-      iframeSrc: ''
+      iframeSrc: '',
+      selectedDate: {},
+      configList: []
+    }
+  },
+  methods: {
+    exportReport () {
+      if (!this.selectedDate.fromYear || !this.selectedDate.toYear) {
+        this.$dialog.alert({
+          type: 'error',
+          msg: '请选择时间范围'
+        })
+        return
+      }
+      let paramObj = {}
+      this.$refs.paramTable.dataList.forEach(item => {
+        paramObj[item.name] = item.val
+      })
+
+      this.$loading({
+        title: '导出报表',
+        msg: '正在下载报表文件，请稍后...'
+      })
+      this.$services.manage
+        .exportReport(
+          {
+            work: 'chaxunbaobiao',
+            params: {
+              start_year: this.selectedDate.fromYear,
+              end_year: this.selectedDate.toYear,
+              ...paramObj,
+              chengben: paramObj.chengbenzhongxin,
+              chenglei: paramObj.chengbenleibie
+            }
+          },
+          '查询报告' + new Date().format('yyyyMMddhhmmss') + '.xlsx'
+        )
+        .then(() => {
+          this.$loading.close()
+        })
+        .catch(err => {
+          this.$loading.close()
+          this.$dialog.alert({
+            type: 'error',
+            msg: err.msg || '服务器错误，请稍后重试'
+          })
+        })
     }
   },
   components: {
-    QueryConfigTable
+    QueryConfigTable,
+    DateFromToSelect
   }
 }
 </script>
@@ -65,14 +99,14 @@ export default {
     .query-box {
       margin-bottom: 8px;
       @include flex;
-      .select-group {
+      /deep/ .select-group {
         @include flex;
-        width: 404px;
+        width: 224px;
         .split-line {
           color: $color-input-border;
         }
         .base-select {
-          width: 90px;
+          width: 100px;
           height: 22px;
           font-size: 12px;
         }

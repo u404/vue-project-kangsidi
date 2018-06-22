@@ -1,6 +1,6 @@
 <template>
   <div class="history-data-manager">
-    <div class="base-main-title">问题清单&gt;</div>
+    <div class="base-main-title">{{title}}&gt;</div>
     <div class="base-main-panel">
       <div class="control-bar">
         <div>
@@ -13,8 +13,8 @@
       <div class="table-title-box">
         <div class="table-title">数据预览</div>
         <div class="table-count-box">
-          <span class="total-count">共 40 条</span>
-          <span class="update-time">&nbsp;&nbsp;更新时间 2018.09.12</span>
+          <span class="total-count">共 {{total}} 条</span>
+          <span class="update-time">&nbsp;&nbsp;更新时间 {{updateTime.format('yyyy.MM.dd')}}</span>
         </div>
       </div>
       <slot></slot>
@@ -26,7 +26,7 @@
         <div class="clear-tips">提示：清空后数据将不可恢复</div>
         <div class="btn-group">
           <button class="base-btn sure-btn" @click="checkSelectedData($event) && clearTips()">确认清空</button>
-          <button class="base-btn base-line-btn cancel-btn" @click="clearFail">取消</button>
+          <button class="base-btn base-line-btn cancel-btn" @click="this.clearDataDialogDisplay = false">取消</button>
         </div>
       </div>
     </base-dialog>
@@ -38,7 +38,7 @@
           <span class="btn-text">上传本地文件</span>
           <input type="file" @change="upload" @click="checkSelectedData" />
         </div>
-        <div class="upload-tips"></div>
+        <div class="upload-tips">仅支持xls(excel2003)文件格式<br/>单个文件建议控制在50MB以内</div>
       </div>
     </base-dialog>
   </div>
@@ -57,9 +57,23 @@ export default {
     //   default: function (doSuccess, doFail, showRecoverTips) {}
     // },
     id: Number,
+    title: {
+      type: String,
+      default: '问题清单'
+    },
     onlyYearSelect: {
       type: Boolean,
       default: false
+    },
+    total: {
+      type: Number,
+      default: 0
+    },
+    updateTime: {
+      type: Date,
+      default () {
+        return new Date()
+      }
     }
   },
   data () {
@@ -107,7 +121,12 @@ export default {
           }
         })
         .then(res => {
-          this.clearSuccess(res)
+          this.clearSuccess(res.data.DataCnt)
+          this.$emit('change', { action: 'clear' })
+        })
+        .catch(err => {
+          console.log(err)
+          this.clearFail()
         })
     },
     clearTips () {
@@ -182,14 +201,14 @@ export default {
         .then(res => {
           this.$loading.close()
           this.alertSuccess()
+          this.$emit('change', { action: 'add' })
         })
         .catch(err => {
-          console.log(err)
           this.$loading.close()
           if (err.code === 2107) {
             this.recoverTips()
           } else {
-            this.alertFail()
+            this.addFail(err.msg)
           }
         })
     },
@@ -206,9 +225,10 @@ export default {
         .then(res => {
           this.$loading.close()
           this.alertSuccess()
+          this.$emit('change', { action: 'add' })
         })
-        .catch(() => {
-          this.alertFail()
+        .catch(err => {
+          this.addFail(err.msg)
         })
     },
     recoverTips () {
@@ -234,11 +254,11 @@ export default {
         msg: '添加数据成功！'
       })
     },
-    addFail () {
+    addFail (msg) {
       this.addDataDialogDisplay = false
       this.$dialog.alert({
         type: 'error',
-        msg: '添加数据失败！'
+        msg: msg || '添加数据失败！'
       })
     }
   },
@@ -292,6 +312,10 @@ export default {
       line-height: 1;
     }
 
+    /deep/ .select-group {
+      margin: 0 15px 24px;
+    }
+
     .bottom-box {
       height: 135px;
       @include flex(column);
@@ -328,7 +352,7 @@ export default {
           @include upload-btn;
         }
         .upload-tips {
-          line-height: 1;
+          line-height: 1.2;
           font-size: 12px;
           color: $color-warning;
         }

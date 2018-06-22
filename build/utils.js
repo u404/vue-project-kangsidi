@@ -1,10 +1,25 @@
 var path = require('path')
+var minimist = require('minimist')
 var config = require('../config')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var sassResourceLoader = require('./sass-resources-loader.conf')
 
 function resolve(dir) {
   return path.join(__dirname, '..', dir)
+}
+
+var args = minimist(process.argv.slice(2), {
+  string: ['version'],
+  default: {
+    version: ''
+  }
+})
+
+exports.isRelease = function () {
+  return process.env.RELEASE_VERSION || 'false'
+}
+exports.packageVersion = function () {
+  return args.version
 }
 
 exports.assetsPath = function (_path) {

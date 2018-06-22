@@ -13,26 +13,6 @@
         <li class="content" v-show="activeTab == 1">
           <global-config-box></global-config-box>
         </li>
-        <li class="content" v-show="false">
-          <div class="source-preview-wrap">
-            <div class="main-title">报表项目表预览</div>
-            <table class="preview-table">
-              <tr class="preview-table-header">
-                <th>xxxxx</th>
-                <th>xxxxx</th>
-                <th>xxxxx</th>
-                <th>xxxxx</th>
-              </tr>
-              <tr>
-                <td>内容</td>
-                <td>内容</td>
-                <td>内容</td>
-                <td>内容</td>
-              </tr>
-            </table>
-          </div>
-
-        </li>
       </ul>
     </div>
 

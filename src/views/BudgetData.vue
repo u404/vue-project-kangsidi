@@ -1,6 +1,6 @@
 <template>
-  <history-data-manager class="budgete-data-wrap" :id="id" :only-year-select="true">
-    <budget-data-table @loadedheader="setBaseData"></budget-data-table>
+  <history-data-manager class="budgete-data-wrap" :id="id" title="预算数据" :only-year-select="true" :total="total" :update-time="updateTime" @change="loadData">
+    <budget-data-table ref="budgetTable" @loadedheader="setBaseData" @loadeddata="setData"></budget-data-table>
   </history-data-manager>
 </template>
 
@@ -12,12 +12,21 @@ export default {
     return {
       id: null,
       clearDataDialogDisplay: false,
-      addDataDialogDisplay: false
+      addDataDialogDisplay: false,
+      total: 0,
+      updateTime: new Date()
     }
   },
   methods: {
     setBaseData (data) {
       this.id = data.id
+      this.updateTime = new Date(data.utime * 1000)
+    },
+    setData (data) {
+      this.total = data.total
+    },
+    loadData () {
+      this.$refs.budgetTable.reload()
     }
   },
   components: {

@@ -1,10 +1,10 @@
 <template>
   <div class="select-group">
-    <base-select :class="{'select-wide': onlyYearSelect}" placeholder="请选择年" :options="fromYearCount" :base-number="fromYearBase" :selected="fromYear" @change="v => {fromYear = v}"></base-select>
-    <base-select v-if="!onlyYearSelect" placeholder="请选择月" :options="fromMonthCount" :base-number="fromMonthBase" :selected="fromMonth" @change="v => {fromMonth = v}"></base-select>
+    <base-select :class="{'select-wide': onlyYearSelect}" :placeholder="fromYearPlaceholder" :options="fromYearCount" :base-number="fromYearBase" :selected="fromYear" @change="v => {fromYear = v}"></base-select>
+    <base-select v-if="!onlyYearSelect" :placeholder="fromMonthPlaceholder" :options="fromMonthCount" :base-number="fromMonthBase" :selected="fromMonth" @change="v => {fromMonth = v}"></base-select>
     <span>--</span>
-    <base-select :class="{'select-wide': onlyYearSelect}" placeholder="请选择年" :options="toYearCount" :base-number="toYearBase" :selected="toYear" @change="v => {toYear = v}"></base-select>
-    <base-select v-if="!onlyYearSelect" placeholder="请选择月" :options="toMonthCount" :base-number="toMonthBase" :selected="toMonth" @change="v => {toMonth = v}"></base-select>
+    <base-select :class="{'select-wide': onlyYearSelect}" :placeholder="toYearPlaceholder" :options="toYearCount" :base-number="toYearBase" :selected="toYear" @change="v => {toYear = v}"></base-select>
+    <base-select v-if="!onlyYearSelect" :placeholder="toMonthPlaceholder" :options="toMonthCount" :base-number="toMonthBase" :selected="toMonth" @change="v => {toMonth = v}"></base-select>
   </div>
 </template>
 <script>
@@ -31,6 +31,22 @@ export default {
       default () {
         return {}
       }
+    },
+    fromYearPlaceholder: {
+      type: String,
+      default: '请选择年'
+    },
+    toYearPlaceholder: {
+      type: String,
+      default: '请选择年'
+    },
+    fromMonthPlaceholder: {
+      type: String,
+      default: '请选择月'
+    },
+    toMonthPlaceholder: {
+      type: String,
+      default: '请选择月'
     }
   },
   data () {
@@ -147,7 +163,6 @@ export default {
 <style lang="scss" scoped>
 .select-group {
   @include flex($jus: space-between);
-  margin: 0 15px 24px;
   .base-select {
     flex: 0 0 auto;
     width: 90px;

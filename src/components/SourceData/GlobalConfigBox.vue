@@ -10,24 +10,24 @@
           <span class="config-label">问题清单重要性水平全局上限控制</span>
           <div class="form-item">
             <span class="form-label">variance</span>
-            <input type="text" ref="config0" class="base-input form-input" placeholder="请输入数字" :disabled="!isEdit" v-model="configList[0].value">
+            <input type="text" ref="config0" class="base-input form-input" placeholder="请输入数字" :disabled="!isEdit" v-model="variance">
           </div>
           <div class="form-item">
             <span class="form-label">variance%</span>
-            <input type="text" ref="config1" class="base-input form-input" placeholder="请输入数字" :disabled="!isEdit" v-model="configList[1].value">
+            <input type="text" ref="config1" class="base-input form-input" placeholder="请输入数字" :disabled="!isEdit" v-model="variancePer">
             <span class="form-text">%</span>
           </div>
         </li>
         <li class="config">
           <span class="config-label">报表金额单位</span>
           <div class="form-item">
-            <base-check-group :list="mapUnitList(configList[2].option)" :disabled="!isEdit" :checked-value="configList[2].value || '元'" @change="(data)=>{configList[2].value = data.value}"></base-check-group>
+            <base-check-group :list="mapUnitList(getConfigById(3).option)" :disabled="!isEdit" :checked-value="getConfigById(3).val" @change="(data)=>{getConfigById(3).val = data.value}"></base-check-group>
           </div>
         </li>
         <li class="config">
           <span class="config-label">报告金额单位</span>
           <div class="form-item">
-            <base-check-group :list="mapUnitList(configList[3].option)" :disabled="!isEdit" :checked-value="configList[3].value || '元'" @change="(data)=>{configList[3].value = data.value}"></base-check-group>
+            <base-check-group :list="mapUnitList(getConfigById(4).option)" :disabled="!isEdit" :checked-value="getConfigById(4).val" @change="(data)=>{getConfigById(4).val = data.value}"></base-check-group>
           </div>
         </li>
       </ul>
@@ -39,11 +39,34 @@ export default {
   data () {
     return {
       isEdit: false,
-      configList: null
+      configList: null,
+      variance: 0,
+      variancePer: 0
     }
   },
-  beforeMount () {
-    this.loadConfigList()
+  watch: {
+    variance (v, ov) {
+      if (v === '') {
+        this.getConfigById(1).val = v
+      } else if (isNaN(+v) || +v < 0 || +v % 1 > 0) {
+        this.variance = ov
+      } else if (/ /.test(v)) {
+        this.variance = v.replace(/(^ +)|( +$)/, '')
+      } else {
+        this.getConfigById(1).val = v
+      }
+    },
+    variancePer (v, ov) {
+      if (v === '') {
+        this.getConfigById(2).val = v
+      } else if (isNaN(+v) || +v > 100 || +v < 0) {
+        this.variancePer = ov
+      } else if (/ /.test(v)) {
+        this.variancePer = v.replace(/(^ +)|( +$)/, '')
+      } else {
+        this.getConfigById(2).val = v
+      }
+    }
   },
   methods: {
     validNumber (value) {
@@ -51,14 +74,17 @@ export default {
     },
     save () {
       if (
-        isNaN(+this.configList[0].value) ||
-        isNaN(+this.configList[1].value)
+        this.getConfigById(1).val === '' ||
+        isNaN(+this.getConfigById(1).val) ||
+        this.getConfigById(2).val === '' ||
+        isNaN(+this.getConfigById(2).val)
       ) {
         this.showInputError()
         return
       }
+      console.log(this.configList)
       this.$services.manage
-        .saveGlobalConfigList({ params: this.configList })
+        .saveConfigs({ params: this.configList })
         .then(res => {
           this.isEdit = false
         })
@@ -85,8 +111,16 @@ export default {
     loadConfigList () {
       this.$services.manage.getGlobalConfigList().then(res => {
         this.configList = res.data
+        this.variance = this.getConfigById(1).val
+        this.variancePer = this.getConfigById(2).val
       })
+    },
+    getConfigById (id) {
+      return this.configList.find(item => item.id === id)
     }
+  },
+  beforeMount () {
+    this.loadConfigList()
   }
 }
 </script>

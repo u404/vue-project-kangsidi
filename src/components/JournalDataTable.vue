@@ -8,7 +8,7 @@
         <td v-for="(val,key) of iData.item" :key="'td-'+key">{{val}}</td>
       </template>
     </base-table>
-    <base-pager :count="pageCount" :default="defaultPage" @pagechange="loadDataList"></base-pager>
+    <base-pager ref="pager" :count="pageCount" :default="defaultPage" @pagechange="loadDataList"></base-pager>
   </div>
 
 </template>
@@ -36,15 +36,31 @@ export default {
   },
   methods: {
     loadDataList (page) {
+      this.$loading({
+        title: '正在加载',
+        msg: '正在加载数据，请稍后...'
+      })
       this.$services.manage
         .getPreviewDataList({
           config_id: this.id,
           page: page
         })
         .then(res => {
+          this.$loading.close()
           this.pageCount = res.data.last_page
           this.dataList = res.data.data
+          this.$emit('loadeddata', res.data)
         })
+        .catch(err => {
+          this.$loading.close()
+          this.$dialog.alert({
+            type: 'error',
+            msg: err.msg
+          })
+        })
+    },
+    reload () {
+      this.$refs.pager.reset(true)
     }
   }
 }

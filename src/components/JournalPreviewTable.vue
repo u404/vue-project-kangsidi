@@ -1,6 +1,6 @@
 <template>
   <div class="table-wrap">
-    <base-table class="journal-data-table" v-bind="$attrs" style="min-width: 500px;" :style="maxHeight?'max-height:'+maxHeight:''" :list="tableList">
+    <base-table class="journal-data-table" v-bind="$attrs" style="min-width: 500px;" :style="maxHeight?'max-height:'+maxHeight:''" :list="dataList">
       <template slot="header" slot-scope="i">
         <th>凭证号</th>
         <th>科目名称</th>
@@ -10,12 +10,12 @@
         <th>订单编号</th>
       </template>
       <template slot-scope="iData">
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td>{{iData.item.xushi_a}}</td>
+        <td>{{iData.item.caike_a}}</td>
+        <td>{{iData.item.xushi_c}}</td>
+        <td>{{iData.item.jine}}</td>
+        <td>{{iData.item.xushi_e}}</td>
+        <td>{{iData.item.xushi_j}}</td>
       </template>
     </base-table>
   </div>
@@ -28,14 +28,45 @@ export default {
     maxHeight: {
       type: String,
       defualt: ''
-    }
+    },
+    year: Number | String,
+    month: Number | String,
+    company: String,
+    center: String,
+    centerClass: String,
+    report: String
   },
   data () {
     return {
-      tableList: [{}, {}, {}, {}, {}, {}, {}, {}]
+      dataList: [],
+      defaultPage: 1
     }
   },
-  methods: {}
+  methods: {
+    loadDataList (page) {
+      return this.$services.manage
+        .getProblemDataList({
+          work: 'xushizhang',
+          params: {
+            year: this.year,
+            month: +this.month < 10 ? '0' + this.month : this.month,
+            company: this.company,
+            chengben: this.center,
+            chenglei: this.centerClass,
+            baobiao: this.report
+          }
+        })
+        .then(res => {
+          this.dataList = res.data
+        })
+        .catch(err => {
+          return Promise.reject(err)
+        })
+    },
+    load () {
+      return this.loadDataList(this.defaultPage)
+    }
+  }
 }
 </script>
 <style lang="scss" scoped>

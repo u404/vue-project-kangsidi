@@ -1,7 +1,7 @@
 <template>
   <div class="report-edit-wrap">
     <div class="report-total-tips">待解释{{unexplained}}条</div>
-    <div class="base-table-box report-edit-table" style="max-height: 500px;">
+    <div class="base-table-box report-edit-table" style="max-height: 410px;">
       <div class="base-header-table-box" ref="headerBox">
         <table class="base-table base-header-table" :class="tableClass" ref="headerTable">
           <tr>
@@ -25,48 +25,54 @@
             <th style="width: 2.4%;"></th>
           </tr>
           <template v-for="(item1, index1) in list">
-            <tr class="level-1" :key="'table-tr-'+index1" @click="toggleActive(index1)">
-              <td>1</td>
-              <td>2</td>
-              <td>3</td>
-              <td>4</td>
+            <tr class="level-1" :class="{active: active[index1]}" :key="'table-tr-'+index1" @click="rowClick(item1)">
+              <td>
+                <i class="toggle-btn" @click.stop="toggleActive(index1)"></i>
+                {{item1.baobiao_name}}
+              </td>
+              <td>{{item1.budget}}</td>
+              <td>{{item1.actual}}</td>
+              <td>{{item1.variance}}</td>
               <td>
                 <div class="flex">
-                  <i class="icon-state" :class="!item1.state?'icon-state-error':'icon-state-success'"></i>
-                  <span>-40%</span>
+                  <i class="icon-state" :class="item1.light==='red'?'icon-state-error':'icon-state-success'"></i>
+                  <span>{{item1.variance_percent}}%</span>
                 </div>
               </td>
               <td></td>
             </tr>
-            <template v-for="(item2,index2) in item1.children">
-              <tr class="level-2" v-show="active[index1]" :key="'table-tr-' + index1 + '-'+index2" @click="toggleActive(index1, index2)">
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
-                <td>4</td>
+            <template v-for="(item2,index2) in item1.list">
+              <tr class="level-2" :class="{active: active[index1] && active[index1][index2]}" v-show="active[index1]" :key="'table-tr-' + index1 + '-'+index2" @click="rowClick(item2)">
+                <td>
+                  <i class="toggle-btn" @click.stop="toggleActive(index1, index2)"></i>
+                  {{item2.baobiao_name}}
+                </td>
+                <td>{{item2.budget}}</td>
+                <td>{{item2.actual}}</td>
+                <td>{{item2.variance}}</td>
                 <td>
                   <div class="flex">
-                    <i class="icon-state" :class="!item2.state?'icon-state-error':'icon-state-success'"></i>
-                    <span>-40%</span>
+                    <i class="icon-state" :class="item2.light==='red'?'icon-state-error':'icon-state-success'"></i>
+                    <span>{{item2.variance_percent}}%</span>
                   </div>
                 </td>
                 <td></td>
               </tr>
-              <template v-for="(item3,index3) in item2.children">
-                <tr class="level-3" v-show="active[index1] && active[index1][index2]" :key="'table-tr-' + index1 + '-' + index2 + '-' + index3">
-                  <td>1</td>
-                  <td>2</td>
-                  <td>3</td>
-                  <td>4</td>
+              <template v-for="(item3,index3) in item2.list">
+                <tr class="level-3" v-show="active[index1] && active[index1][index2]" :key="'table-tr-' + index1 + '-' + index2 + '-' + index3" @click="rowClick(item3)">
+                  <td>{{item3.baobiao_name}}</td>
+                  <td>{{item3.budget}}</td>
+                  <td>{{item3.actual}}</td>
+                  <td>{{item3.variance}}</td>
                   <td>
                     <div class="flex">
-                      <i class="icon-state" :class="item3.state?'icon-state-error':'icon-state-success'"></i>
-                      <span>-40%</span>
+                      <i class="icon-state" :class="item3.light==='red'?'icon-state-error':'icon-state-success'"></i>
+                      <span>{{item3.variance_percent}}%</span>
                     </div>
                   </td>
-                  <td v-if="isPreview">{{item3.reason}}</td>
-                  <td class="reason-wrap" v-if="!isPreview">
-                    <input class="reason-input" :class="{warning: !item3.reason}" type="text" v-model="item3.reason" />
+                  <td v-if="isPreview || +item3.is_report===0">{{item3.report}}</td>
+                  <td class="reason-wrap" v-else>
+                    <input class="reason-input" :class="{warning: !item3.report}" type="text" v-model="item3.report" @change="updateReportItemReason(item3.id, item3.report)" @click.stop />
                   </td>
                 </tr>
               </template>
@@ -82,10 +88,10 @@
         <table class="base-table base-footer-table" :class="tableClass" ref="footerTable">
           <tr>
             <th style="width:2%;">总计</th>
-            <th>Budget</th>
-            <th>Actual</th>
-            <th>variance</th>
-            <th>variance%</th>
+            <th>{{total.budget || 0}}</th>
+            <th>{{total.actual || 0}}</th>
+            <th>{{total.variance || 0}}</th>
+            <th>{{total.variance_percent || 0}}%</th>
             <th style="width: 2.4%;"></th>
           </tr>
         </table>
@@ -115,65 +121,40 @@ export default {
     isPreview: {
       type: Boolean,
       default: false
-    }
+    },
+    year: String | Number,
+    month: String | Number,
+    company: String | Number,
+    centerCode: String,
+    centerClass: String
   },
   data () {
     return {
-      list: [
-        {
-          children: [
-            {
-              children: [{}, {}, {}, {}]
-            },
-            {},
-            {
-              children: [
-                {},
-                {
-                  reason: 'afadsfadsfasdf'
-                },
-                {},
-                {
-                  reason: 'afadsfadsfasdf'
-                }
-              ]
-            }
-          ]
-        },
-        {
-          children: [
-            {},
-            {
-              children: [{}, {}, {}, {}]
-            }
-          ]
-        },
-        {
-          children: [
-            {
-              children: [{}, {}, {}, {}]
-            },
-            {
-              children: [{}, {}, {}, {}]
-            },
-            {
-              children: [{}, {}, {}, {}]
-            },
-            {}
-          ]
-        }
-      ],
-      active: {},
-      unexplained: 0
+      list: [],
+      total: {},
+      active: {}
     }
   },
-  mounted () {
-    this.activeChildren(this.list, this.active)
-    this.active = { ...this.active } // 这里就为了强制进行一次数据绑定更新，否则监听不到对象内部的变更
-    this.$nextTick(() => {
-      this.autoSetHeaderPadding()
-    })
+  computed: {
+    unexplained () {
+      if (!this.list) return 0
+      let count = 0
+      console.log('list', this.list)
+      this.list.forEach(item => {
+        item.list &&
+          item.list.forEach(item2 => {
+            item2.list &&
+              item2.list.forEach(item3 => {
+                if (+item3.is_report !== 0 && !item3.report) {
+                  count++
+                }
+              })
+          })
+      })
+      return count
+    }
   },
+  mounted () {},
   watch: {},
   methods: {
     activeChildren (list, parentActive) {
@@ -181,9 +162,9 @@ export default {
         return
       }
       for (let i = 0, length = list.length; i < length; i++) {
-        if (list[i].children) {
+        if (list[i].list) {
           parentActive[i] = {}
-          this.activeChildren(list[i].children, parentActive[i])
+          this.activeChildren(list[i].list, parentActive[i])
         }
       }
     },
@@ -229,7 +210,59 @@ export default {
         console.log('滚动到底部了，触发事件')
         this.$emit('scrollBottom')
       }, 300)
-    })()
+    })(),
+
+    updateReportItemReason (id, text) {
+      this.$services.manage.updateData({
+        work: 'wentireport',
+        params: {
+          report_id: id,
+          report_text: text
+        }
+      })
+    },
+
+    loadDataList () {
+      this.$loading({
+        title: '正在加载',
+        msg: '正在加载数据，请稍后...'
+      })
+      this.$services.manage
+        .getProblemDataList({
+          work: 'wentiqingdan',
+          params: {
+            year: this.year,
+            month: +this.month < 10 ? '0' + this.month : this.month,
+            company: this.company,
+            chengben: this.centerCode,
+            chenglei: this.centerClass
+          }
+        })
+        .then(res => {
+          this.list = res.data.list
+          this.total = res.data.total
+          this.activeChildren(this.list, this.active)
+          this.active = { ...this.active } // 这里就为了强制进行一次数据绑定更新，否则监听不到对象内部的变更
+          this.$nextTick(() => {
+            this.autoSetHeaderPadding()
+          })
+          this.$loading.close()
+        })
+        .catch(err => {
+          this.$loading.close()
+          this.$dialog.alert({
+            type: 'error',
+            msg: err.msg
+          })
+        })
+    },
+    load () {
+      this.loadDataList()
+    },
+
+    rowClick (itemData) {
+      this.$emit('rowclick', itemData)
+    }
   }
 }
 </script>
@@ -246,22 +279,60 @@ export default {
   }
   .report-edit-table {
     .base-table {
-      td {
-        overflow: hidden;
+      tr {
+        td {
+          overflow: hidden;
+          position: relative;
+
+          .toggle-btn {
+            position: absolute;
+            top: 50%;
+            margin-top: -5.5px;
+            margin-left: -20px;
+            width: 11px;
+            height: 11px;
+            background: url(../../assets/images/icons.png) 0 -190px no-repeat;
+
+            &:before {
+              content: "";
+              position: absolute;
+              top: -50%;
+              left: -50%;
+              width: 200%;
+              height: 200%;
+            }
+          }
+        }
+        &.active td .toggle-btn {
+          background-position: -11px -190px;
+        }
       }
+
       tr.level-1 {
         td {
           background: $color-table-bg-3;
+
+          &:first-child {
+            padding-left: 40px;
+          }
         }
       }
       tr.level-2 {
         td {
           background: $color-table-bg-2;
+
+          &:first-child {
+            padding-left: 50px;
+          }
         }
       }
       tr.level-3 {
         td {
           background: $color-table-bg;
+
+          &:first-child {
+            padding-left: 60px;
+          }
 
           &.reason-wrap {
             padding: 0;

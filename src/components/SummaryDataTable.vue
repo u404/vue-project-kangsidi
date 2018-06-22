@@ -5,8 +5,9 @@
         <th>公司</th>
         <th>状态</th>
       </template>
-      <template>
-        <td></td>
+      <template slot-scope="iData">
+        <td>{{iData.item.gongsi_sx}}</td>
+        <td>{{iData.item.status}}</td>
       </template>
     </base-table>
     <base-pager :count="pageCount" :default="defaultPage" @pagechange="loadDataList"></base-pager>
@@ -28,16 +29,30 @@ export default {
   },
   methods: {
     loadDataList (page) {
+      this.$loading({
+        title: '正在加载',
+        msg: '正在加载数据，请稍后...'
+      })
       this.$services.manage
         .getProblemDataList({
-          chart_name: 'huizongliebiao',
-          param: {
+          work: 'huizongliebiao',
+          page: page,
+          params: {
             year: this.year,
-            month: this.month
+            month: this.month < 10 ? '0' + this.month : this.month
           }
         })
-        .then()
-        .catch()
+        .then(res => {
+          this.$loading.close()
+          this.dataList = res.data
+        })
+        .catch(err => {
+          this.$loading.close()
+          this.$dialog.alert({
+            type: 'error',
+            msg: err.msg
+          })
+        })
     },
     load () {
       this.loadDataList(this.defaultPage)

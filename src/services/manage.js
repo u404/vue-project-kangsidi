@@ -1,3 +1,4 @@
+import jsFileDownload from 'js-file-download'
 import ajaxBase from './ajaxBase'
 
 const getSourceWorkTableList = () => {
@@ -38,7 +39,7 @@ const getGlobalConfigList = () => {
   })
 }
 
-const saveGlobalConfigList = (data) => {
+const saveConfigs = (data) => {
   return ajaxBase.post('/input/param/savedata', data)
 }
 
@@ -74,14 +75,39 @@ const deleteData = (data) => {
   return ajaxBase.post('/input/exceldata/delete', data)
 }
 
-const getProblemDataList = (data) => {
-  return ajaxBase.get('/chart/chartdata/getdata', data)
+const getProblemDataList = (params) => {
+  return ajaxBase.get('/chart/data/output', {
+    params: params
+  })
+}
+
+const getConfigs = (params) => {
+  return ajaxBase.get('/input/param/getvalues', {
+    params: params
+  })
+}
+
+const updateData = (data) => {
+  return ajaxBase.post('/chart/data/input', data)
+}
+
+const buildProblemDataList = (data) => {
+  return ajaxBase.post('/chart/data/collate', data)
+}
+
+const exportReport = (data, fileName) => {
+  return ajaxBase.post('/chart/data/outfile', data, {
+    responseType: 'blob'
+  })
+  .then(res => {
+    jsFileDownload(res.data, fileName)
+  })
 }
 
 export default {
   getSourceWorkTableList,
   getGlobalConfigList,
-  saveGlobalConfigList,
+  saveConfigs,
   getJournalDataHeader,
   getBudgetDataHeader,
   getPreviewDataList,
@@ -89,5 +115,9 @@ export default {
   forceRecoverData,
   clearData,
   deleteData,
-  getProblemDataList
+  getProblemDataList,
+  getConfigs,
+  buildProblemDataList,
+  updateData,
+  exportReport
 }
