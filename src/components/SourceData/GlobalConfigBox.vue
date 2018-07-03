@@ -10,11 +10,11 @@
           <span class="config-label">问题清单重要性水平全局上限控制</span>
           <div class="form-item">
             <span class="form-label">variance</span>
-            <input type="text" ref="config0" class="base-input form-input" placeholder="请输入数字" :disabled="!isEdit" v-model="variance">
+            <input type="text" ref="config0" class="base-input form-input" placeholder="请输入数字" :disabled="!isEdit" :readonly="!isEdit" v-model="variance">
           </div>
           <div class="form-item">
             <span class="form-label">variance%</span>
-            <input type="text" ref="config1" class="base-input form-input" placeholder="请输入数字" :disabled="!isEdit" v-model="variancePer">
+            <input type="text" ref="config1" class="base-input form-input" placeholder="请输入数字" :disabled="!isEdit" :readonly="!isEdit" v-model="variancePer">
             <span class="form-text">%</span>
           </div>
         </li>
@@ -82,6 +82,8 @@ export default {
         this.showInputError()
         return
       }
+      this.variance = this.getConfigById(1).val = +this.getConfigById(1).val
+      this.variancePer = this.getConfigById(2).val = +this.getConfigById(2).val
       console.log(this.configList)
       this.$services.manage
         .saveConfigs({ params: this.configList })

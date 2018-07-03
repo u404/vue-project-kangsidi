@@ -41,29 +41,26 @@ export default {
         })
         return
       }
-      let paramObj = {}
-      this.$refs.paramTable.dataList.forEach(item => {
-        paramObj[item.name] = item.val
-      })
+      // let paramObj = {}
+      // this.$refs.paramTable.dataList.forEach(item => {
+      //   paramObj[item.name] = item.val
+      // })
 
       this.$loading({
         title: '导出报表',
-        msg: '正在下载报表文件，请稍后...'
+        msg: '正在生成报表文件，请稍后...'
       })
       this.$services.manage
-        .exportReport(
-          {
-            work: 'chaxunbaobiao',
-            params: {
-              start_year: this.selectedDate.fromYear,
-              end_year: this.selectedDate.toYear,
-              ...paramObj,
-              chengben: paramObj.chengbenzhongxin,
-              chenglei: paramObj.chengbenleibie
-            }
-          },
-          '查询报告' + new Date().format('yyyyMMddhhmmss') + '.xlsx'
-        )
+        .exportReport({
+          work: 'chaxunbaobiao',
+          params: {
+            start_year: this.selectedDate.fromYear,
+            end_year: this.selectedDate.toYear
+            // ...paramObj,
+            // chengben: paramObj.chengbenzhongxin,
+            // chenglei: paramObj.chengbenleibie
+          }
+        })
         .then(() => {
           this.$loading.close()
         })

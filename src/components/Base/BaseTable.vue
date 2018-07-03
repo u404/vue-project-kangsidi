@@ -45,22 +45,27 @@ export default {
   data () {
     return {}
   },
-  mounted () {
-    console.log(this.$refs.headerBox.style)
-    this.autoSetHeaderPadding()
+  updated () {
+    this.autoSetHeaderPadding('updated')
   },
-  watch: {
-    list () {
-      this.$nextTick(() => {
-        this.autoSetHeaderPadding()
-      })
-    },
-    maxHeight () {
-      this.$nextTick(() => {
-        this.autoSetHeaderPadding()
-      })
-    }
-  },
+  // watch: {
+  //   list: {
+  //     handler () {
+  //       this.$nextTick(() => {
+  //         this.autoSetHeaderPadding('list')
+  //       })
+  //     },
+  //     immediate: true
+  //   },
+  //   maxHeight: {
+  //     handler () {
+  //       this.$nextTick(() => {
+  //         this.autoSetHeaderPadding('maxHeight')
+  //       })
+  //     },
+  //     immediate: true
+  //   }
+  // },
   methods: {
     onScroll (e) {
       let scrollBottom =
@@ -77,9 +82,14 @@ export default {
         this.$emit('scrollbottom')
       }, 300)
     })(),
-    autoSetHeaderPadding () {
+    autoSetHeaderPadding (msg) {
+      let scrollWidth =
+        this.$refs.headerTable.offsetWidth - this.$refs.bodyTable.offsetWidth
+
       this.$refs.headerBox.style.paddingRight =
-        this.$refs.bodyBox.offsetWidth - this.$refs.bodyBox.clientWidth + 'px'
+        +this.$refs.headerBox.style.paddingRight.replace('px', '') +
+        scrollWidth +
+        'px'
     }
   }
 }

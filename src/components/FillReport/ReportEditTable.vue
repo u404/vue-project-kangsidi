@@ -1,6 +1,7 @@
 <template>
   <div class="report-edit-wrap">
-    <div class="report-total-tips">待解释{{unexplained}}条</div>
+    <div class="report-total-tips">待解释
+      <span :class="{strong: unexplained}">{{unexplained}}</span> 条</div>
     <div class="base-table-box report-edit-table" style="max-height: 410px;">
       <div class="base-header-table-box" ref="headerBox">
         <table class="base-table base-header-table" :class="tableClass" ref="headerTable">
@@ -30,16 +31,16 @@
                 <i class="toggle-btn" @click.stop="toggleActive(index1)"></i>
                 {{item1.baobiao_name}}
               </td>
-              <td>{{item1.budget}}</td>
-              <td>{{item1.actual}}</td>
-              <td>{{item1.variance}}</td>
+              <td>{{item1.budget && item1.budget.formatCurrency()}}</td>
+              <td>{{item1.actual && item1.actual.formatCurrency()}}</td>
+              <td>{{item1.variance && item1.variance.formatCurrency()}}</td>
               <td>
                 <div class="flex">
                   <i class="icon-state" :class="item1.light==='red'?'icon-state-error':'icon-state-success'"></i>
-                  <span>{{item1.variance_percent}}%</span>
+                  <span>{{item1.variance_percent===null?'':item1.variance_percent+'%'}}</span>
                 </div>
               </td>
-              <td></td>
+              <td @click.stop></td>
             </tr>
             <template v-for="(item2,index2) in item1.list">
               <tr class="level-2" :class="{active: active[index1] && active[index1][index2]}" v-show="active[index1]" :key="'table-tr-' + index1 + '-'+index2" @click="rowClick(item2)">
@@ -47,32 +48,32 @@
                   <i class="toggle-btn" @click.stop="toggleActive(index1, index2)"></i>
                   {{item2.baobiao_name}}
                 </td>
-                <td>{{item2.budget}}</td>
-                <td>{{item2.actual}}</td>
-                <td>{{item2.variance}}</td>
+                <td>{{item2.budget && item2.budget.formatCurrency()}}</td>
+                <td>{{item2.actual && item2.actual.formatCurrency()}}</td>
+                <td>{{item2.variance && item2.variance.formatCurrency()}}</td>
                 <td>
                   <div class="flex">
                     <i class="icon-state" :class="item2.light==='red'?'icon-state-error':'icon-state-success'"></i>
-                    <span>{{item2.variance_percent}}%</span>
+                    <span>{{item2.variance_percent===null?'':item2.variance_percent+'%'}}</span>
                   </div>
                 </td>
-                <td></td>
+                <td @click.stop></td>
               </tr>
               <template v-for="(item3,index3) in item2.list">
                 <tr class="level-3" v-show="active[index1] && active[index1][index2]" :key="'table-tr-' + index1 + '-' + index2 + '-' + index3" @click="rowClick(item3)">
                   <td>{{item3.baobiao_name}}</td>
-                  <td>{{item3.budget}}</td>
-                  <td>{{item3.actual}}</td>
-                  <td>{{item3.variance}}</td>
+                  <td>{{item3.budget && item3.budget.formatCurrency()}}</td>
+                  <td>{{item3.actual && item3.actual.formatCurrency()}}</td>
+                  <td>{{item3.variance && item3.variance.formatCurrency()}}</td>
                   <td>
                     <div class="flex">
                       <i class="icon-state" :class="item3.light==='red'?'icon-state-error':'icon-state-success'"></i>
-                      <span>{{item3.variance_percent}}%</span>
+                      <span>{{item3.variance_percent===null?'':item3.variance_percent+'%'}}</span>
                     </div>
                   </td>
-                  <td v-if="isPreview || +item3.is_report===0">{{item3.report}}</td>
-                  <td class="reason-wrap" v-else>
-                    <input class="reason-input" :class="{warning: !item3.report}" type="text" v-model="item3.report" @change="updateReportItemReason(item3.id, item3.report)" @click.stop />
+                  <td v-if="isPreview || +item3.is_report===0" @click.stop>{{item3.report}}</td>
+                  <td class="reason-wrap" v-else @click.stop>
+                    <input class="reason-input" :class="{warning: true}" type="text" v-model="item3.report" @focus="cacheItem(item3)" @change="updateReportItemReason(item3.id, item3.report)" @click.stop />
                   </td>
                 </tr>
               </template>
@@ -91,7 +92,7 @@
             <th>{{total.budget || 0}}</th>
             <th>{{total.actual || 0}}</th>
             <th>{{total.variance || 0}}</th>
-            <th>{{total.variance_percent || 0}}%</th>
+            <th>{{total.variance_percent===null?'':total.variance_percent+'%'}}</th>
             <th style="width: 2.4%;"></th>
           </tr>
         </table>
@@ -132,7 +133,8 @@ export default {
     return {
       list: [],
       total: {},
-      active: {}
+      active: {},
+      cacheData: {}
     }
   },
   computed: {
@@ -212,6 +214,17 @@ export default {
       }, 300)
     })(),
 
+    cacheItem (item) {
+      this.cacheData[item.id] = {
+        item: item,
+        oldData: {
+          ...item
+        }
+      }
+    },
+    resetItem (id) {
+      this.$set(this.cacheData[id].item, 'report', this.cacheData[id].oldData.report)
+    },
     updateReportItemReason (id, text) {
       this.$services.manage.updateData({
         work: 'wentireport',
@@ -219,6 +232,12 @@ export default {
           report_id: id,
           report_text: text
         }
+      }).catch(() => {
+        this.resetItem(id)
+        this.$dialog.alert({
+          type: 'error',
+          msg: '自动保存失败，该条原因已被还原'
+        })
       })
     },
 
@@ -276,6 +295,11 @@ export default {
     text-align: right;
     line-height: 1;
     color: $color-error-2;
+
+    .strong {
+      font-size: 14px;
+      font-weight: bold;
+    }
   }
   .report-edit-table {
     .base-table {

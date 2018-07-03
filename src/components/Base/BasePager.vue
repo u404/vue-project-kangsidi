@@ -7,7 +7,7 @@
     </ul>
     <div class="quick-jump-box">
       <span>快速跳到</span>
-      <input type="number" class="base-input pager-input" v-model="inputPage" />
+      <input type="number" class="base-input pager-input" v-model.number="inputPage" @keypress.enter="goPage(inputPage)" />
       <span>页</span>
       <button class="base-btn pager-go-btn" @click="goPage(inputPage)">Go</button>
     </div>
@@ -34,7 +34,7 @@ export default {
   data () {
     return {
       inputPage: 0,
-      current: 1
+      current: 0
     }
   },
   computed: {
@@ -64,22 +64,32 @@ export default {
     default: {
       handler (page) {
         this.goPage(page, true)
+        this.updateInputPage()
+      },
+      immediate: true
+    },
+    count: {
+      handler (page) {
+        this.updateInputPage()
       },
       immediate: true
     },
     current: {
       handler (page, oldPage) {
-        if (page === this.count) {
-          this.inputPage = 1
-        } else {
-          this.inputPage = page + 1
-        }
+        this.updateInputPage()
         this.$emit('pagechange', page, oldPage)
       },
       immediate: false
     }
   },
   methods: {
+    updateInputPage () {
+      if (this.current === this.count) {
+        this.inputPage = 1
+      } else {
+        this.inputPage = this.current + 1
+      }
+    },
     goNext () {
       if (this.current < this.count) {
         this.current++

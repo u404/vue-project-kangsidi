@@ -5,7 +5,7 @@
         <th v-for="item in thList" :key="item">{{item}}</th>
       </template>
       <template slot-scope="iData">
-        <td v-for="(val,key) of iData.item" :key="'td-'+key">{{val}}</td>
+        <td v-for="(val,key) of iData.item" :key="'td-'+key">{{val && (key==='e'?val.formatCurrency():val) }}</td>
       </template>
     </base-table>
     <base-pager ref="pager" :count="pageCount" :default="defaultPage" @pagechange="loadDataList"></base-pager>

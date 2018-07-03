@@ -19,12 +19,12 @@
         <td>{{iData.item.chenglei}}</td>
         <td>{{iData.item.chengben}}</td>
         <td>{{iData.item.chengbenming}}</td>
-        <td>{{iData.item.budget}}</td>
-        <td>{{iData.item.actual}}</td>
-        <td>{{iData.item.variance}}</td>
-        <td>{{iData.item.variance_percent}}</td>
+        <td>{{iData.item.budget && iData.item.budget.formatCurrency()}}</td>
+        <td>{{iData.item.actual && iData.item.actual.formatCurrency()}}</td>
+        <td>{{iData.item.variance && iData.item.variance.formatCurrency()}}</td>
+        <td>{{iData.item.variance_percent === null? '': iData.item.variance_percent + '%'}}</td>
         <td>{{iData.item.sum_is_report}}</td>
-        <td>{{iData.item.sum_no_report}}</td>
+        <td :class="{error: iData.item.sum_no_report > 0}">{{iData.item.sum_no_report}}</td>
         <td>{{iData.item.utime}}</td>
         <td>{{iData.item.status}}</td>
         <td class="base-center">
@@ -102,5 +102,13 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
+.table-wrap {
+  .filter-data-table {
+    td.error {
+      font-weight: bold;
+      color: $color-error-2;
+    }
+  }
+}
 </style>

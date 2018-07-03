@@ -1,4 +1,4 @@
-import jsFileDownload from 'js-file-download'
+// import jsFileDownload from 'js-file-download'
 import ajaxBase from './ajaxBase'
 
 const getSourceWorkTableList = () => {
@@ -41,6 +41,12 @@ const getGlobalConfigList = () => {
 
 const saveConfigs = (data) => {
   return ajaxBase.post('/input/param/savedata', data)
+}
+
+const checkDataExist = (params) => {
+  return ajaxBase.get('input/exceldata/getcount', {
+    params: params
+  })
 }
 
 const uploadExcel = (params, data) => {
@@ -95,13 +101,14 @@ const buildProblemDataList = (data) => {
   return ajaxBase.post('/chart/data/collate', data)
 }
 
-const exportReport = (data, fileName) => {
+const exportReport = (data) => {
   return ajaxBase.post('/chart/data/outfile', data, {
-    responseType: 'blob'
+    // responseType: 'blob'
   })
-  .then(res => {
-    jsFileDownload(res.data, fileName)
-  })
+    .then(res => {
+      console.log(res)
+      location.href = ajaxBase.defaults.baseURL + '/storage/excel' + res.data.file
+    })
 }
 
 export default {
@@ -119,5 +126,6 @@ export default {
   getConfigs,
   buildProblemDataList,
   updateData,
-  exportReport
+  exportReport,
+  checkDataExist
 }

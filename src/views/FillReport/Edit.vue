@@ -1,6 +1,6 @@
 <template>
   <div class="edit-wrap">
-    <div class="base-main-title">问题清单&gt;</div>
+    <div class="base-main-title">填报列表&gt;</div>
     <div class="base-main-panel control-panel">
       <div class="panel-child control-bar" v-if="!isPreview">
         <div></div>
@@ -80,6 +80,11 @@ export default {
     center: {
       handler (v) {
         this.activeCenterCode = v
+        this.$nextTick(() => {
+          this.loadReportList({})
+          this.detailReport = ''
+          this.detailDisplay = false
+        })
       },
       immediate: true
     },
@@ -138,7 +143,8 @@ export default {
       this.$refs.reportTable.load()
     },
     previewDetail ({ baobiao }) {
-      if(this.detailReport === baobiao) { //取消重复点击加载
+      if (this.detailReport === baobiao) {
+        // 取消重复点击加载
         return
       }
       this.detailReport = baobiao
@@ -165,7 +171,6 @@ export default {
       })
     },
     redirect (center, centerClass) {
-      console.log('redirect', center, centerClass)
       this.$router.replace({
         name: this.$route.name,
         query: {
@@ -217,13 +222,6 @@ export default {
     console.log('mount')
     this.loadVarianceConfig()
     this.loadCenterList()
-    this.loadReportList({})
-  },
-  beforeRouteUpdate (to, from, next) {
-    this.loadReportList({})
-    this.detailReport = ''
-    this.detailDisplay = false
-    next()
   },
   components: {
     BudgetPreviewTable,

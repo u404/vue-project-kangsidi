@@ -19,7 +19,8 @@
     <base-dialog class="add-data-dialog" title="添加数据" :show="addDataDialogDisplay" @close="addDataDialogDisplay=false">
       <div class="base-btn upload-file-btn">
         <span>上传本地文件</span>
-        <input type="file" @change="upload" />
+        <input type="file" @change="upload" v-if="addDataDialogDisplay" />
+        <!--为了销毁清除fileInput中的选中文件，所以使用了v-if-->
       </div>
       <div class="upload-file-tips">仅支持xls(excel2003)文件格式，<br />单个文件建议控制在50MB以内</div>
     </base-dialog>
@@ -31,8 +32,7 @@ export default {
     return {
       tableList: [],
       addDataDialogDisplay: false,
-      addDataId: null,
-      uploadFile: null
+      addDataId: null
     }
   },
   beforeMount () {
@@ -103,7 +103,8 @@ export default {
           this.$loading.close()
           this.alertSuccess()
         })
-        .catch(() => {
+        .catch(err => {
+          console.log(err)
           this.$loading.close()
           this.alertFail()
         })

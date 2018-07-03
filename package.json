@@ -10,6 +10,7 @@
     "build": "cross-env NODE_ENV=production node build/build.js",
     "build_test": "cross-env NODE_ENV=production node build/build.js --version test",
     "build_ksd": "cross-env NODE_ENV=production node build/build.js --version ksd",
+    "build_beta": "cross-env NODE_ENV=production node build/build.js --version beta",
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {

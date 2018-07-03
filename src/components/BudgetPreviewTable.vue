@@ -7,7 +7,7 @@
       </template>
       <template slot-scope="iData">
         <td>{{iData.item.yuke_a}}</td>
-        <td>{{iData.item.jine}}</td>
+        <td>{{iData.item.jine && iData.item.jine.formatCurrency()}}</td>
       </template>
     </base-table>
   </div>

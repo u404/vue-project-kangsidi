@@ -26,7 +26,7 @@
         <div class="clear-tips">提示：清空后数据将不可恢复</div>
         <div class="btn-group">
           <button class="base-btn sure-btn" @click="checkSelectedData($event) && clearTips()">确认清空</button>
-          <button class="base-btn base-line-btn cancel-btn" @click="this.clearDataDialogDisplay = false">取消</button>
+          <button class="base-btn base-line-btn cancel-btn" @click="clearDataDialogDisplay = false">取消</button>
         </div>
       </div>
     </base-dialog>
@@ -34,9 +34,9 @@
       <div class="select-tips">请选择上传哪一时间段的数据</div>
       <date-from-to-select class="form-item" :only-year-select="onlyYearSelect" :selected="selectedDate" @change="v=>{selectedDate=v}"></date-from-to-select>
       <div class="bottom-box">
-        <div class="base-btn upload-btn">
+        <div class="base-btn upload-btn" @click="checkSelectedData($event) && checkExist()">
           <span class="btn-text">上传本地文件</span>
-          <input type="file" @change="upload" @click="checkSelectedData" />
+          <input ref="uploadBtn" type="file" @change="upload" @click.stop v-show="false" v-if="addDataDialogDisplay" />
         </div>
         <div class="upload-tips">仅支持xls(excel2003)文件格式<br/>单个文件建议控制在50MB以内</div>
       </div>
@@ -104,20 +104,8 @@ export default {
         .deleteData({
           config_id: this.id,
           filter: {
-            start:
-              this.selectedDate.fromYear +
-              '-' +
-              (this.selectedDate.fromMonth < 10
-                ? '0' + this.selectedDate.fromMonth
-                : this.selectedDate.fromMonth) +
-              '-01',
-            end:
-              this.selectedDate.toYear +
-              '-' +
-              (this.selectedDate.toMonth < 10
-                ? '0' + this.selectedDate.toMonth
-                : this.selectedDate.toMonth) +
-              '-31'
+            start: this.getFilterStart(),
+            end: this.getFilterEnd()
           }
         })
         .then(res => {
@@ -147,7 +135,7 @@ export default {
         onCancel: () => {}
       })
     },
-    checkSelectedData (e) {
+    checkSelectedData (e, success) {
       if (
         (this.onlyYearSelect &&
           (!this.selectedDate.fromYear || !this.selectedDate.toYear)) ||
@@ -166,32 +154,73 @@ export default {
       }
       return true
     },
+    checkExist () {
+      this.$loading({
+        title: '检查数据',
+        msg: '正在检查数据，请稍后...'
+      })
+      this.$services.manage
+        .checkDataExist({
+          config_id: this.id,
+          filter: {
+            start: this.getFilterStart(),
+            end: this.getFilterEnd()
+          }
+        })
+        .then(res => {
+          this.$loading.close()
+          if (res.data > 0) {
+            this.recoverTips(() => {
+              this.$refs.uploadBtn.click()
+            })
+          } else {
+            this.initTips(() => {
+              this.$refs.uploadBtn.click()
+            })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+          this.$loading.close()
+          this.addFail(err.msg)
+        })
+    },
+    getFilterStart () {
+      if (this.onlyYearSelect) {
+        return this.selectedDate.fromYear + '-01-01'
+      }
+      return this.selectedDate.fromYear +
+        '-' + (
+        this.selectedDate.fromMonth < 10
+          ? '0' + this.selectedDate.fromMonth
+          : this.selectedDate.fromMonth
+      ) +
+        '-01'
+    },
+    getFilterEnd () {
+      if (this.onlyYearSelect) {
+        return this.selectedDate.toYear + '-12-31'
+      }
+      return (
+        this.selectedDate.toYear +
+        '-' +
+        (this.selectedDate.toMonth < 10
+          ? '0' + this.selectedDate.toMonth
+          : this.selectedDate.toMonth) +
+        '-31'
+      )
+    },
     upload (e) {
       if (!e.target.files.length) {
         return
       }
+      this.addDataDialogDisplay = false
       var formData = new FormData()
       formData.append('config_id', this.id)
-      formData.append(
-        'filter[start]',
-        this.selectedDate.fromYear +
-          '-' +
-          (this.selectedDate.fromMonth < 10
-            ? '0' + this.selectedDate.fromMonth
-            : this.selectedDate.fromMonth) +
-          '-01'
-      )
-      formData.append(
-        'filter[end]',
-        this.selectedDate.toYear +
-          '-' +
-          (this.selectedDate.toMonth < 10
-            ? '0' + this.selectedDate.toMonth
-            : this.selectedDate.toMonth) +
-          '-31'
-      )
+      formData.append('filter[start]', this.getFilterStart())
+      formData.append('filter[end]', this.getFilterEnd())
       formData.append('excel_file', e.target.files[0])
-      this.addDataDialogDisplay = false
+      formData.append('force', 1)
       this.$loading({
         title: '正在上传',
         msg: '正在上传中，请稍后...'
@@ -200,16 +229,16 @@ export default {
         .uploadExcel({}, formData)
         .then(res => {
           this.$loading.close()
-          this.alertSuccess()
-          this.$emit('change', { action: 'add' })
+          if (res.data.SaveCnt > 0) {
+            this.addSuccess()
+            this.$emit('change', { action: 'add' })
+          } else {
+            this.addFail('添加数据失败！<br/>文件中没有有效数据')
+          }
         })
         .catch(err => {
           this.$loading.close()
-          if (err.code === 2107) {
-            this.recoverTips()
-          } else {
-            this.addFail(err.msg)
-          }
+          this.addFail(err.msg)
         })
     },
     recover () {
@@ -224,14 +253,15 @@ export default {
         })
         .then(res => {
           this.$loading.close()
-          this.alertSuccess()
+          this.addSuccess()
           this.$emit('change', { action: 'add' })
         })
         .catch(err => {
+          this.$loading.close()
           this.addFail(err.msg)
         })
     },
-    recoverTips () {
+    recoverTips (success) {
       this.$dialog.confirm({
         msg:
           (this.onlyYearSelect
@@ -242,7 +272,25 @@ export default {
               this.selectedDate.toMonth
             }月`) + `数据已存在，<br/>是否继续上传并覆盖原有数据？`,
         onSure: () => {
-          this.recover()
+          success && success()
+        },
+        onCancel: () => {}
+      })
+    },
+    initTips (success) {
+      this.$dialog.confirm({
+        msg:
+          `确认初始化` +
+          (this.onlyYearSelect
+            ? `${this.selectedDate.fromYear}年-${this.selectedDate.toYear}年`
+            : `${this.selectedDate.fromYear}年${
+              this.selectedDate.fromMonth
+            }月-${this.selectedDate.toYear}年${
+              this.selectedDate.toMonth
+            }月`) +
+          `数据？`,
+        onSure: () => {
+          success && success()
         },
         onCancel: () => {}
       })

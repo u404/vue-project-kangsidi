@@ -3,19 +3,19 @@
     <base-table class="journal-data-table" v-bind="$attrs" style="min-width: 500px;" :style="maxHeight?'max-height:'+maxHeight:''" :list="dataList">
       <template slot="header" slot-scope="i">
         <th>凭证号</th>
+        <th>科目编号</th>
         <th>科目名称</th>
         <th>摘要</th>
         <th>金额</th>
         <th>借贷</th>
-        <th>订单编号</th>
       </template>
       <template slot-scope="iData">
         <td>{{iData.item.xushi_a}}</td>
         <td>{{iData.item.caike_a}}</td>
+        <td>{{iData.item.caike_d}}</td>
         <td>{{iData.item.xushi_c}}</td>
-        <td>{{iData.item.jine}}</td>
+        <td>{{iData.item.jine && iData.item.jine.formatCurrency()}}</td>
         <td>{{iData.item.xushi_e}}</td>
-        <td>{{iData.item.xushi_j}}</td>
       </template>
     </base-table>
   </div>
@@ -44,6 +44,7 @@ export default {
   },
   methods: {
     loadDataList (page) {
+      console.log('loadList')
       return this.$services.manage
         .getProblemDataList({
           work: 'xushizhang',
@@ -57,6 +58,7 @@ export default {
           }
         })
         .then(res => {
+          console.log('loadedList')
           this.dataList = res.data
         })
         .catch(err => {
