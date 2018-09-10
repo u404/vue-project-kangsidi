@@ -1,9 +1,11 @@
 {
   "title": "管理中心",
-  "menuList": [{
+  "menuList": [
+    {
       "icon": "icon-setting",
       "name": "系统设置",
-      "children": [{
+      "children": [
+        {
           "name": "基础数据",
           "path": "/SourceData"
         },
@@ -18,15 +20,16 @@
       ]
     },
     {
-      "icon": "icon-list",
-      "name": "问题清单",
-      "children": [{
-          "name": "汇总列表",
-          "path": "/SummaryData"
-        },
+      "icon": "icon-budget",
+      "name": "预算比",
+      "children": [
         {
           "name": "填报列表",
-          "path": "/FillReport"
+          "path": "/Budget/FillReport"
+        },
+        {
+          "name": "原因润色",
+          "path": "/Budget/ReasonReport"
         }
       ]
     },

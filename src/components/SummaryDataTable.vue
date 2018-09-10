@@ -7,7 +7,7 @@
       </template>
       <template slot-scope="iData">
         <td>{{iData.item.gongsi_sx}}</td>
-        <td>{{iData.item.status}}</td>
+        <td><span class="base-table-btn status-btn" @click="$emit('statusclick', iData.item)">{{iData.item.status}}</span></td>
       </template>
     </base-table>
     <base-pager :count="pageCount" :default="defaultPage" @pagechange="loadDataList"></base-pager>
@@ -61,4 +61,13 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.table-wrap {
+  .summary-data-table {
+    .base-table {
+      .status-btn {
+        margin: 0;
+      }
+    }
+  }
+}
 </style>

@@ -9,6 +9,7 @@
 
 <script>
 export default {
+  name: 'base-check',
   props: {
     tag: {
       type: String,
@@ -79,6 +80,26 @@ export default {
           width: 6px;
           height: 6px;
           border-radius: 3px;
+          background: $color-active;
+        }
+      }
+    }
+  }
+  &.base-check {
+    .base-check-icon {
+      @include flex($jus: center);
+      content: "";
+      margin-right: 6px;
+      width: 12px;
+      height: 12px;
+      border: 1px solid $color-input-border;
+    }
+    &.active {
+      .base-check-icon {
+        &:before {
+          content: "";
+          width: 6px;
+          height: 6px;
           background: $color-active;
         }
       }

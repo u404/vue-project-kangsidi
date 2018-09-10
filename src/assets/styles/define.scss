@@ -23,6 +23,7 @@ $color-active-lighter: #a5cdfb;
 $color-active-light: #5386d9;
 $color-active: #3072e5;
 $color-active-dark: #25539d;
+$color-disabled: #999;
 $color-disabled-light: #f6f6f6;
 $color-bg-light: #f8f8f8;
 $color-bg-light-2: #f5f5f5;
@@ -56,7 +57,7 @@ $margin-s: 8px;
   }
 }
 
-@mixin flex($flow:row nowrap, $jus:space-between, $ali:center) {
+@mixin flex($flow: row nowrap, $jus: space-between, $ali: center) {
   display: flex;
   flex-flow: $flow;
   justify-content: $jus;
@@ -72,7 +73,7 @@ $margin-s: 8px;
 @mixin clearfix-after {
   &:after {
     display: block;
-    content: '';
+    content: "";
     clear: both;
   }
 }
@@ -153,5 +154,5 @@ $margin-s: 8px;
 }
 
 @function get-rem-size($px) {
-  @return $px/100+'rem';
+  @return $px/100 + "rem";
 }

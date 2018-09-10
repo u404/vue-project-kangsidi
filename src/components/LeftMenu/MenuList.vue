@@ -114,6 +114,16 @@ export default {
           background-position: -54px 0;
         }
       }
+      &.icon-budget {
+        > .menu-text:before {
+          background-position: -90px 0;
+        }
+      }
+      &.icon-period {
+        > .menu-text:before {
+          background-position: -108px 0;
+        }
+      }
     }
 
     &.has-child {

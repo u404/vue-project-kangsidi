@@ -71,9 +71,15 @@
                       <span>{{item3.variance_percent===null?'':item3.variance_percent+'%'}}</span>
                     </div>
                   </td>
-                  <td v-if="isPreview || +item3.is_report===0" @click.stop>{{item3.report}}</td>
-                  <td class="reason-wrap" v-else @click.stop>
-                    <input class="reason-input" :class="{warning: true}" type="text" v-model="item3.report" @focus="cacheItem(item3)" @change="updateReportItemReason(item3.id, item3.report)" @click.stop />
+                  <td class="base-overflow" v-if="isPreview || +item3.is_report===0" @click.stop v-tooltip="{content: getReasonPreviewText(item3), classes: 'content-tooltip' , placement: 'left'}">{{getReasonPreviewText(item3)}}</td>
+                  <td class="reason-wrap" v-else @click.stop v-tooltip="{content: getReasonPreviewText(item3), classes: 'content-tooltip' , placement: 'left'}">
+                    <div class="flex-wrap">
+                      <div class="reason-preview" v-show="editItem !== item3" @click="tryEditItem(item3)">
+                        <span class="reason-preview-text">{{getReasonPreviewText(item3)}}</span>
+                      </div>
+                      <input :id="'reason-input-' + item3.id" class="reason-input" v-show="editItem === item3" :class="{warning: true}" type="text" v-model="editText" @change="updateReportReasonByText(item3, editText)" @blur="cancelEdit()" @click.stop />
+                      <span class="base-btn edit-btn" v-if="preReasonSetted" @click="advanceEdit(item3)">高级</span>
+                    </div>
                   </td>
                 </tr>
               </template>
@@ -99,14 +105,16 @@
       </div>
 
     </div>
+    <EditReasonDialog v-if="preReasonSetted" :show="!!advanceEditItem" :dataList="preReasonList" :item="advanceEditItem" @cancel="cancelAdvanceEdit" @sure="saveAdvanceEdit"></EditReasonDialog>
   </div>
-
 </template>
 
 <script>
 import utils from '@/assets/scripts/utils'
+import EditReasonDialog from './EditReasonDialog'
 export default {
   props: {
+    dataType: String,
     maxHeight: {
       type: Number,
       default: 500
@@ -134,7 +142,13 @@ export default {
       list: [],
       total: {},
       active: {},
-      cacheData: {}
+      cacheData: {},
+
+      preReasonList: [],
+
+      editItem: null,
+      editText: '',
+      advanceEditItem: null
     }
   },
   computed: {
@@ -154,10 +168,17 @@ export default {
           })
       })
       return count
+    },
+    preReasonSetted () {
+      return this.preReasonList.length > 0
     }
   },
-  mounted () {},
-  watch: {},
+  watch: {
+    dataType: {
+      immediate: true,
+      handler () {}
+    }
+  },
   methods: {
     activeChildren (list, parentActive) {
       if (!list) {
@@ -213,27 +234,63 @@ export default {
         this.$emit('scrollBottom')
       }, 300)
     })(),
-
-    cacheItem (item) {
-      this.cacheData[item.id] = {
-        item: item,
-        oldData: {
-          ...item
-        }
+    getReasonPreviewText (item) {
+      if (!item.report) {
+        return ''
+      }
+      let report = JSON.parse(item.report)
+      let text = ''
+      if (report.preReasonList) {
+        report.preReasonList.forEach(o => {
+          text += `${o.b}，影响金额：${(+o.amount).formatCurrency()}；`
+        })
+      }
+      if (report.customReason && /\S+/.test(report.customReason.text)) {
+        text += `${report.customReason.text}，影响金额：${(+report.customReason
+          .amount).formatCurrency()}；`
+      }
+      return text
+    },
+    tryEditItem (item) {
+      let report = JSON.parse(item.report || null) || {}
+      if (!report.preReasonList || !report.preReasonList.length) {
+        this.editItem = item
+        this.editText = (report.customReason && report.customReason.text) || ''
+        this.$nextTick(() => {
+          document.querySelector('#reason-input-' + item.id).focus()
+        })
       }
     },
-    resetItem (id) {
-      this.$set(this.cacheData[id].item, 'report', this.cacheData[id].oldData.report)
+    cancelEdit () {
+      this.editItem = null
+      this.editText = ''
     },
-    updateReportItemReason (id, text) {
-      this.$services.manage.updateData({
-        work: 'wentireport',
-        params: {
-          report_id: id,
-          report_text: text
-        }
+
+    updateReportReason (item, preReasonList, customReason) {
+      let report = {
+        preReasonList,
+        customReason
+      }
+      return this.$services.manage
+        .updateData({
+          work: 'wentireport',
+          params: {
+            report_id: item.id,
+            report
+          }
+        })
+        .then(res => {
+          item.report = JSON.stringify(report)
+          this.list = [...this.list] // 强制重新渲染
+          return res
+        })
+    },
+    updateReportReasonByText (item, text) {
+      this.updateReportReason(item, [], {
+        text: text.replace(/^\s+|\s+$/, ''),
+        amount: item.variance
       }).catch(() => {
-        this.resetItem(id)
+        this.cancelEdit()
         this.$dialog.alert({
           type: 'error',
           msg: '自动保存失败，该条原因已被还原'
@@ -241,7 +298,7 @@ export default {
       })
     },
 
-    loadDataList () {
+    loadDataList (callback) {
       this.$loading({
         title: '正在加载',
         msg: '正在加载数据，请稍后...'
@@ -266,6 +323,7 @@ export default {
             this.autoSetHeaderPadding()
           })
           this.$loading.close()
+          callback && callback()
         })
         .catch(err => {
           this.$loading.close()
@@ -273,15 +331,57 @@ export default {
             type: 'error',
             msg: err.msg
           })
+          callback && callback()
         })
     },
-    load () {
-      this.loadDataList()
+    load (callback) {
+      this.loadDataList(callback)
+    },
+    reset () {
+      this.list = []
+      this.total = {}
+      this.active = {}
     },
 
     rowClick (itemData) {
       this.$emit('rowclick', itemData)
+    },
+
+    advanceEdit (item) {
+      this.advanceEditItem = item
+    },
+    cancelAdvanceEdit () {
+      this.advanceEditItem = null
+    },
+    saveAdvanceEdit (data) {
+      this.updateReportReason(
+        this.advanceEditItem,
+        data.preReasonList,
+        data.customReason
+      )
+        .then(res => {
+          this.cancelAdvanceEdit()
+        })
+        .catch(e => {
+          this.cancelAdvanceEdit()
+        })
+    },
+
+    loadPreReasonList () {
+      return this.$services.manage
+        .getPreviewDataList({
+          config_id: 14
+        })
+        .then(res => {
+          this.preReasonList = res.data.data
+        })
     }
+  },
+  components: {
+    EditReasonDialog
+  },
+  mounted () {
+    this.loadPreReasonList()
   }
 }
 </script>
@@ -360,6 +460,25 @@ export default {
 
           &.reason-wrap {
             padding: 0;
+            overflow: hidden;
+            .flex-wrap {
+              display: flex;
+              width: 100%;
+              height: 100%;
+            }
+            .reason-preview {
+              flex: 1 1 auto;
+              @include flex;
+              width: 1%;
+              padding: 0 18px;
+              background: $color-table-bg-warning;
+              cursor: text;
+              .reason-preview-text {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
+            }
             .reason-input {
               display: block;
               padding: 0 18px;
@@ -373,6 +492,11 @@ export default {
               &:focus {
                 background: $color-table-bg-1;
               }
+            }
+            .edit-btn {
+              flex: 0 0 auto;
+              height: 100%;
+              padding: 0 18px;
             }
           }
         }

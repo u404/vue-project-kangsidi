@@ -14,7 +14,7 @@
           <button class="base-btn report-btn" @click="showBuildSetting">生成问题清单</button>
         </div>
       </div>
-      <filter-table ref="filterTable" :year="selectedYear" :month="selectedMonth" :company="selectedCompany" :variance="variance" :variance-per="variancePer"></filter-table>
+      <filter-table ref="filterTable" :dataType="dataType" :year="selectedYear" :month="selectedMonth" :company="selectedCompany" :variance="variance" :variance-per="variancePer"></filter-table>
     </div>
 
     <base-confirm class="build-dialog" title="生成问题清单" :show="buildConfirmDisplay" @cancel="buildConfirmDisplay=false" @sure="tryBuild">
@@ -65,6 +65,9 @@
 import utils from '@/assets/scripts/utils'
 import FilterTable from '@/components/FillReport/FilterTable'
 export default {
+  props: {
+    dataType: String
+  },
   data () {
     return {
       buildConfirmDisplay: false,
@@ -97,6 +100,23 @@ export default {
     }
   },
   watch: {
+    dataType: {
+      immediate: true,
+      handler () {
+        if (this.getCache()) {
+          this.$nextTick(() => {
+            this.query()
+          })
+        } else {
+          this.selectedYear = ''
+          this.selectedMonth = ''
+          this.selectedCompany = ''
+          this.$nextTick(() => {
+            this.$refs.filterTable.reset()
+          })
+        }
+      }
+    },
     checkSelected () {
       this.needReloadConfig = true
     },
@@ -121,14 +141,14 @@ export default {
   },
   methods: {
     setCache () {
-      utils.localStorage.set('fillReportData', {
+      utils.localStorage.set(`fillReportData_${this.dataType}`, {
         selectedYear: this.selectedYear,
         selectedMonth: this.selectedMonth,
         selectedCompany: this.selectedCompany
       })
     },
     getCache () {
-      let data = utils.localStorage.get('fillReportData')
+      let data = utils.localStorage.get(`fillReportData_${this.dataType}`)
       if (data) {
         this.selectedYear = data.selectedYear
         this.selectedMonth = data.selectedMonth
@@ -282,13 +302,6 @@ export default {
           }
         })
       })
-  },
-  mounted () {
-    if (this.getCache()) {
-      this.$nextTick(() => {
-        this.query()
-      })
-    }
   },
   components: {
     FilterTable

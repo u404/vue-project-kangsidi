@@ -27,7 +27,11 @@
         <td :class="{error: iData.item.sum_no_report > 0}">{{iData.item.sum_no_report}}</td>
         <td>{{iData.item.utime}}</td>
         <td>{{iData.item.status}}</td>
-        <td class="base-center">
+        <td class="base-center" v-if="iData.item.sum_is_report == 0">
+          <span class="base-table-btn base-disabled">预览</span>
+          <span class="base-table-btn base-disabled">编辑</span>
+        </td>
+        <td class="base-center" v-else>
           <span class="base-table-btn" @click="redirect(iData.item.chengben, iData.item.chenglei, true)">预览</span>
           <span class="base-table-btn" @click="redirect(iData.item.chengben, iData.item.chenglei, false)">编辑</span>
         </td>
@@ -41,6 +45,7 @@
 <script>
 export default {
   props: {
+    dataType: String,
     year: Number | String,
     month: Number | String,
     company: Number | String,
@@ -86,9 +91,16 @@ export default {
     load () {
       this.loadDataList(this.defaultPage)
     },
+    reset () {
+      this.dataList = []
+    },
     redirect (center, centerClass, preview) {
       this.$router.push({
-        name: preview ? 'FillReportPreview' : 'FillReportEdit',
+        name: 'FillReportEdit',
+        params: {
+          dataType: this.dataType,
+          operate: preview ? 'Preview' : 'Edit'
+        },
         query: {
           year: this.year,
           month: this.month,

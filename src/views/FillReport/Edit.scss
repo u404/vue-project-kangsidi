@@ -48,13 +48,30 @@
   .filter-box {
     padding: 8px 0;
     @include flex($jus: flex-start, $ali: stretch);
+    .condition-box {
+      flex: 0 0 auto;
+      @include flex(column, center, stretch);
+      padding-left: 14px;
+      padding-right: 16px;
+      border-right: $border-default;
+
+      .condition-row {
+        @include flex($jus: center);
+        font-size: $font-default;
+        &:nth-child(n + 2) {
+          margin-top: 14px;
+        }
+      }
+    }
     .input-box {
-      @include flex(column, center, center);
+      flex: 0 0 auto;
+      @include flex(column, center, stretch);
       padding-left: 14px;
       padding-right: 16px;
       border-right: $border-default;
       .form-item {
-        @include flex($jus: center);
+        @include flex($jus: flex-start);
+        font-size: $font-default;
         .form-label {
           width: 75px;
           font-size: $font-default;
@@ -67,7 +84,7 @@
             background: $color-disabled-light;
           }
         }
-        &:nth-child(n+2) {
+        &:nth-child(n + 2) {
           margin-top: 14px;
         }
       }
@@ -100,9 +117,16 @@
             background: $color-active;
             color: $color-white;
           }
+          &.disabled {
+            cursor: not-allowed;
+            border-color: $color-border;
+            background: $color-bg-light;
+            color: $color-disabled;
+          }
         }
       }
     }
   }
-  .result-table {}
+  .result-table {
+  }
 }

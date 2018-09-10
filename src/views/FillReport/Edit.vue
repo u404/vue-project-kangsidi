@@ -18,26 +18,37 @@
         </div>
       </div>
       <div class="panel-child filter-box">
+        <div class="condition-box">
+          <div class="condition-row">
+            <span>{{year}}年</span>
+            <span>{{month}}月</span>
+          </div>
+          <div class="condition-row">
+            <span>{{company}}</span>
+          </div>
+        </div>
         <div class="input-box">
           <div class="form-item">
             <span class="form-label">variance</span>
-            <input class="base-input form-input" type="text" disabled :value="variance" />
+            <span>{{variance}}</span>
+            <!-- <input class="base-input form-input" type="text" disabled :value="variance" /> -->
           </div>
           <div class="form-item">
             <span class="form-label">variance%</span>
-            <input class="base-input form-input" type="text" disabled :value="variancePer" />
+            <span>{{variancePer}}</span>
+            <!-- <input class="base-input form-input" type="text" disabled :value="variancePer" /> -->
           </div>
         </div>
         <div class="selector-box">
           <div class="selector-tips">选择成本中心编码</div>
           <ul class="option-list">
-            <li class="option" :class="{active: activeCenterCode === item.a}" v-for="(item,i) in centerList" :key="'center-'+i" @click="redirect(item.a, item.c)">{{item.a}}</li>
+            <li class="option" :class="{active: activeCenterCode === item.chengben, disabled: item.sum_is_report == 0}" v-for="(item,i) in centerList" :key="'center-'+i" @click="item.sum_is_report > 0 && redirect(item.chengben, item.chenglei)">{{item.chengben}}</li>
           </ul>
         </div>
       </div>
     </div>
     <div class="base-main-panel">
-      <report-edit-table ref="reportTable" :is-preview="isPreview" :year="year" :month="month" :company="company" :center-code="activeCenterCode" :center-class="activeCenterClass" @rowclick="previewDetail"></report-edit-table>
+      <report-edit-table ref="reportTable" :dataType="dataType" :is-preview="isPreview" :year="year" :month="month" :company="company" :center-code="activeCenterCode" :center-class="activeCenterClass" @rowclick="previewDetail"></report-edit-table>
     </div>
   </div>
 </template>
@@ -48,6 +59,7 @@ import JournalPreviewTable from '@/components/JournalPreviewTable'
 import ReportEditTable from '@/components/FillReport/ReportEditTable'
 export default {
   props: {
+    dataType: String,
     isPreview: {
       type: Boolean,
       default: false
@@ -73,18 +85,23 @@ export default {
       variance: 0,
       variancePer: '0%',
       detailReport: '',
-      detailDisplay: false
+      detailDisplay: false,
+      reportLoading: false
     }
   },
+  computed: {},
   watch: {
+    dataType: {
+      immediate: true,
+      handler () {
+        this.loadBase()
+        this.loadReport()
+      }
+    },
     center: {
       handler (v) {
         this.activeCenterCode = v
-        this.$nextTick(() => {
-          this.loadReportList({})
-          this.detailReport = ''
-          this.detailDisplay = false
-        })
+        this.loadReport()
       },
       immediate: true
     },
@@ -132,15 +149,28 @@ export default {
     },
     loadCenterList () {
       return this.$services.manage
-        .getPreviewDataList({
-          config_id: 8
+        .getProblemDataList({
+          work: 'wentiliebiao',
+          page: 1,
+          params: {
+            year: this.year,
+            month: this.month < 10 ? '0' + this.month : this.month,
+            company: this.company,
+            cost_center: true
+          }
         })
         .then(res => {
-          this.centerList = res.data.data
+          this.centerList = res.data
+        })
+        .catch(err => {
+          this.$dialog.alert({
+            type: 'error',
+            msg: err.msg
+          })
         })
     },
-    loadReportList () {
-      this.$refs.reportTable.load()
+    loadReportList (callback) {
+      this.$refs.reportTable.load(callback)
     },
     previewDetail ({ baobiao }) {
       if (this.detailReport === baobiao) {
@@ -216,12 +246,22 @@ export default {
             msg: err.msg
           })
         })
+    },
+    loadBase () {
+      this.loadVarianceConfig()
+      this.loadCenterList()
+    },
+    loadReport () {
+      if (this.reportLoading) return
+      this.reportLoading = true
+      this.$nextTick(() => {
+        this.loadReportList(() => {
+          this.reportLoading = false
+        })
+        this.detailReport = ''
+        this.detailDisplay = false
+      })
     }
-  },
-  mounted () {
-    console.log('mount')
-    this.loadVarianceConfig()
-    this.loadCenterList()
   },
   components: {
     BudgetPreviewTable,

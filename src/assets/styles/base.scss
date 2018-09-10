@@ -282,7 +282,8 @@ button,
             display: none;
           }
         }
-        .dialog-msg {}
+        .dialog-msg {
+        }
       }
     }
   } // 动画部分
@@ -381,6 +382,22 @@ button,
   }
 }
 
+.base-tooltip-wrap {
+  &.force-relative {
+    position: relative !important;
+  }
+}
+
+.base-tooltip {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  padding: 12px;
+  z-index: 900;
+  background: #fff;
+  box-shadow: 0 2px 5px 0.5px rgba(0, 0, 0, 0.1);
+}
+
 .base-table-box {
   position: relative;
   @include flex(column, flex-start, stretch);
@@ -442,6 +459,12 @@ button,
   }
   td {
     height: 30px;
+
+    &.base-overflow {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
   .base-table-btn {
     display: inline-block;
@@ -451,6 +474,10 @@ button,
     &:hover,
     &:active {
       text-decoration: underline;
+    }
+    &.base-disabled {
+      cursor: not-allowed;
+      color: $color-disabled;
     }
   }
   tr:nth-child(2n) {
@@ -477,13 +504,13 @@ button,
       @include flex($jus: center);
       cursor: pointer;
       &.prev:before {
-        content: '';
+        content: "";
         width: 8px;
         height: 12px;
         background: url(../images/icons.png) 0 -178px no-repeat;
       }
       &.next:before {
-        content: '';
+        content: "";
         width: 8px;
         height: 12px;
         background: url(../images/icons.png) -8px -178px no-repeat;
@@ -513,7 +540,7 @@ button,
 }
 
 .base-tab {
-  >.tab-list {
+  > .tab-list {
     @include flex($jus: flex-start, $ali: stretch);
     height: 45px;
     padding-bottom: 3px;
@@ -531,7 +558,7 @@ button,
         color: $color-active-light;
         font-weight: bold;
         &:before {
-          content: '';
+          content: "";
           position: absolute;
           top: 0;
           left: 0;
@@ -540,7 +567,7 @@ button,
           background: $color-active-light;
         }
         &:after {
-          content: '';
+          content: "";
           position: absolute;
           top: 100%;
           left: 0;
@@ -551,12 +578,12 @@ button,
       }
     }
     &:after {
-      content: '';
+      content: "";
       flex: 1 1 auto;
       background: $color-white;
     }
   }
-  >.content-list {
+  > .content-list {
     .content {
       padding: 12px;
       background: $color-white;
@@ -578,5 +605,128 @@ button,
   background: $color-white;
   .base-pager {
     margin-top: 34px;
+  }
+}
+
+.tooltip {
+  display: block !important;
+  z-index: 10000;
+
+  .tooltip-inner {
+    background: black;
+    color: white;
+    border-radius: 16px;
+    padding: 5px 10px 4px;
+  }
+
+  .tooltip-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+    margin: 5px;
+    border-color: black;
+    z-index: 1;
+  }
+
+  &[x-placement^="top"] {
+    margin-bottom: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 5px 0 5px;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+      border-bottom-color: transparent !important;
+      bottom: -5px;
+      left: calc(50% - 5px);
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  &[x-placement^="bottom"] {
+    margin-top: 5px;
+
+    .tooltip-arrow {
+      border-width: 0 5px 5px 5px;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+      border-top-color: transparent !important;
+      top: -5px;
+      left: calc(50% - 5px);
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  &[x-placement^="right"] {
+    margin-left: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 5px 5px 0;
+      border-left-color: transparent !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+      left: -5px;
+      top: calc(50% - 5px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  &[x-placement^="left"] {
+    margin-right: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 0 5px 5px;
+      border-top-color: transparent !important;
+      border-right-color: transparent !important;
+      border-bottom-color: transparent !important;
+      right: -5px;
+      top: calc(50% - 5px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  &.popover {
+    $color: #f9f9f9;
+
+    .popover-inner {
+      background: $color;
+      color: black;
+      padding: 24px;
+      border-radius: 5px;
+      box-shadow: 0 5px 30px rgba(black, 0.1);
+    }
+
+    .popover-arrow {
+      border-color: $color;
+    }
+  }
+
+  &[aria-hidden="true"] {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.15s, visibility 0.15s;
+  }
+
+  &[aria-hidden="false"] {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.15s;
+  }
+
+  &.content-tooltip {
+    .tooltip-inner {
+      background: #fff;
+      color: inherit;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.4);
+      border-radius: 4px;
+      max-width: 280px;
+    }
+    .tooltip-arrow {
+      display: none;
+    }
   }
 }

@@ -1,0 +1,134 @@
+.edit-wrap {
+  .base-main-panel {
+    &.control-panel {
+      padding-top: 10px;
+      padding-bottom: 0;
+    }
+  }
+  .panel-child {
+    border-bottom: $border-default;
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  .control-bar {
+    @include flex();
+    padding: 12px $margin-default 13px;
+    .btn-box {
+      @include flex();
+      .save-btn {
+        @include btn-size(80px, 25px);
+      }
+      .submit-btn {
+        @include btn-size(80px, 25px);
+        margin-left: $margin-default;
+      }
+    }
+  }
+  .detail-box {
+    padding: 5px 0;
+    @include flex($jus: center, $ali: stretch);
+    .budget-table-box {
+      width: 50%; // flex: 1 0 auto;
+      margin-right: 14px;
+      @include auto-scroll;
+    }
+    .journal-table-box {
+      width: 50%; // flex: 2 0 auto;
+      @include auto-scroll;
+    }
+    /deep/ .view-table {
+      border-color: #8ea9da;
+      td,
+      th {
+        border-color: #8ea9da;
+      }
+    }
+  }
+  .filter-box {
+    padding: 8px 0;
+    @include flex($jus: flex-start, $ali: stretch);
+    .condition-box {
+      flex: 0 0 auto;
+      @include flex(column, center, stretch);
+      padding-left: 14px;
+      padding-right: 16px;
+      border-right: $border-default;
+      min-width: 200px;
+
+      .condition-row {
+        @include flex($jus: center);
+        font-size: $font-default;
+        &:nth-child(n + 2) {
+          margin-top: 14px;
+        }
+      }
+    }
+    .input-box {
+      flex: 0 0 auto;
+      @include flex(column, center, stretch);
+      padding-left: 14px;
+      padding-right: 16px;
+      border-right: $border-default;
+      .form-item {
+        @include flex($jus: flex-start);
+        font-size: $font-default;
+        .form-label {
+          width: 75px;
+          font-size: $font-default;
+        }
+        .form-input {
+          width: 146px;
+          height: 24px;
+          font-size: 12px;
+          &[disabled] {
+            background: $color-disabled-light;
+          }
+        }
+        &:nth-child(n + 2) {
+          margin-top: 14px;
+        }
+      }
+    }
+    .selector-box {
+      // min-height: 94px;
+      padding-left: 12px;
+      .selector-tips {
+        padding: 5px 7px;
+        font-size: 12px;
+        line-height: 1;
+      }
+      .option-list {
+        @include flex(row wrap, flex-start);
+        overflow: auto;
+        max-height: 68px;
+        .option {
+          margin: 7px;
+          min-width: 70px;
+          padding: 0 10px;
+          height: 20px;
+          border-radius: 10px;
+          border: 1px solid $color-input-border-dark;
+          @include flex($jus: center);
+          cursor: pointer;
+          &:hover {
+            background: $color-input-hover;
+          }
+          &.active {
+            border-color: $color-active;
+            background: $color-active;
+            color: $color-white;
+          }
+          &.disabled {
+            cursor: not-allowed;
+            border-color: $color-border;
+            background: $color-bg-light;
+            color: $color-disabled;
+          }
+        }
+      }
+    }
+  }
+  .result-table {
+  }
+}

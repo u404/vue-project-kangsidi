@@ -12,7 +12,7 @@
           <button class="base-btn base-line-btn query-btn" @click="query">查阅</button>
         </div>
       </div>
-      <summary-data-table :year="selectedYear" :month="selectedMonth" ref="summaryTable"></summary-data-table>
+      <summary-data-table :year="selectedYear" :month="selectedMonth" ref="summaryTable" @statusclick="goFillReport"></summary-data-table>
     </div>
   </div>
 </template>
@@ -53,6 +53,14 @@ export default {
         selectedYear: this.selectedYear,
         selectedMonth: this.selectedMonth
       })
+    },
+    goFillReport (item) {
+      utils.localStorage.set('fillReportData', {
+        selectedYear: this.selectedYear,
+        selectedMonth: this.selectedMonth,
+        selectedCompany: item.gongsi_sx
+      })
+      this.$router.push({name: 'FillReport'})
     },
     getCache () {
       let data = utils.localStorage.get('summaryData')
